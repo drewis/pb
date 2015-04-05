@@ -40,7 +40,7 @@ type ProgressBar struct {
 	ForceWidth                       bool
 	ManualUpdate                     bool
 
-	isFinish     int32
+	isFinish     chan bool
 	startTime    time.Time
 	currentValue int64
 
@@ -67,6 +67,7 @@ func New(total int64) *ProgressBar {
 		Output:        os.Stderr,
 		Units:         U_BYTES,
 		ManualUpdate:  false,
+		isFinish:      make(chan bool, 1),
 		currentValue:  -1,
 	}
 	return pb.Format(FORMAT)
@@ -162,7 +163,7 @@ func (pb *ProgressBar) SetWidth(width int) *ProgressBar {
 
 // End print
 func (pb *ProgressBar) Finish() {
-	atomic.StoreInt32(&pb.isFinish, 1)
+	pb.isFinish <- true
 	pb.write(atomic.LoadInt64(&pb.current))
 	if !pb.NotPrint {
 		fmt.Println()
@@ -217,16 +218,19 @@ func (pb *ProgressBar) write(current int64) {
 
 	// time left
 	fromStart := time.Now().Sub(pb.startTime)
-	if atomic.LoadInt32(&pb.isFinish) != 0 {
+	select {
+	case <-pb.isFinish:
 		if pb.ShowFinalTime {
 			left := (fromStart / time.Second) * time.Second
 			timeLeftBox = left.String()
 		}
-	} else if pb.ShowTimeLeft && current > 0 {
-		perEntry := fromStart / time.Duration(current)
-		left := time.Duration(pb.Total-current) * perEntry
-		left = (left / time.Second) * time.Second
-		timeLeftBox = left.String()
+	default:
+		if pb.ShowTimeLeft && current > 0 {
+			perEntry := fromStart / time.Duration(current)
+			left := time.Duration(pb.Total-current) * perEntry
+			left = (left / time.Second) * time.Second
+			timeLeftBox = left.String()
+		}
 	}
 
 	// speed
@@ -301,9 +305,14 @@ func (pb *ProgressBar) Update() {
 
 // Internal loop for writing progressbar
 func (pb *ProgressBar) writer() {
-	for atomic.LoadInt32(&pb.isFinish) == 0 {
-		pb.Update()
-		time.Sleep(pb.RefreshRate)
+	pb.Update()
+	for {
+		select {
+		case <-pb.isFinish:
+			return
+		case <-time.After(pb.RefreshRate):
+			pb.Update()
+		}
 	}
 }
 
