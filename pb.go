@@ -165,15 +165,16 @@ func (pb *ProgressBar) SetWidth(width int) *ProgressBar {
 func (pb *ProgressBar) Finish() {
 	pb.isFinish <- true
 	pb.write(atomic.LoadInt64(&pb.current))
-	if !pb.NotPrint {
-		fmt.Println()
-	}
 }
 
 // End print and write string 'str'
 func (pb *ProgressBar) FinishPrint(str string) {
 	pb.Finish()
-	fmt.Println(str)
+	if pb.Output != nil {
+		fmt.Fprintln(pb.Output, str)
+	} else {
+		fmt.Println(str)
+	}
 }
 
 // implement io.Writer
