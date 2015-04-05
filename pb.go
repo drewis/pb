@@ -15,21 +15,8 @@ const (
 	FORMAT               = "[=>-]"
 )
 
-// DEPRECATED
-// variables for backward compatibility, from now do not work
-// use pb.Format and pb.SetRefreshRate
-var (
-	DefaultRefreshRate                         = DEFAULT_REFRESH_RATE
-	BarStart, BarEnd, Empty, Current, CurrentN string
-)
-
 // Create new progress bar object
-func New(total int) (pb *ProgressBar) {
-	return New64(int64(total))
-}
-
-// Create new progress bar object uding int64 as total
-func New64(total int64) (pb *ProgressBar) {
+func New(total int64) (pb *ProgressBar) {
 	pb = &ProgressBar{
 		Total:         total,
 		RefreshRate:   DEFAULT_REFRESH_RATE,
@@ -46,7 +33,7 @@ func New64(total int64) (pb *ProgressBar) {
 }
 
 // Create new object and start
-func StartNew(total int) (pb *ProgressBar) {
+func StartNew(total int64) (pb *ProgressBar) {
 	pb = New(total)
 	pb.Start()
 	return
@@ -103,21 +90,17 @@ func (pb *ProgressBar) Start() {
 }
 
 // Increment current value
-func (pb *ProgressBar) Increment() int {
+func (pb *ProgressBar) Increment() int64 {
 	return pb.Add(1)
 }
 
 // Set current value
-func (pb *ProgressBar) Set(current int) {
-	atomic.StoreInt64(&pb.current, int64(current))
+func (pb *ProgressBar) Set(current int64) {
+	atomic.StoreInt64(&pb.current, current)
 }
 
 // Add to current value
-func (pb *ProgressBar) Add(add int) int {
-	return int(pb.Add64(int64(add)))
-}
-
-func (pb *ProgressBar) Add64(add int64) int64 {
+func (pb *ProgressBar) Add(add int64) int64 {
 	return atomic.AddInt64(&pb.current, add)
 }
 
@@ -150,10 +133,9 @@ func (pb *ProgressBar) Format(format string) (bar *ProgressBar) {
 }
 
 // Set bar refresh rate
-func (pb *ProgressBar) SetRefreshRate(rate time.Duration) (bar *ProgressBar) {
-	bar = pb
+func (pb *ProgressBar) SetRefreshRate(rate time.Duration) *ProgressBar {
 	pb.RefreshRate = rate
-	return
+	return pb
 }
 
 // Set units
@@ -202,14 +184,14 @@ func (pb *ProgressBar) FinishPrint(str string) {
 // implement io.Writer
 func (pb *ProgressBar) Write(p []byte) (n int, err error) {
 	n = len(p)
-	pb.Add(n)
+	pb.Add(int64(n))
 	return
 }
 
 // implement io.Reader
 func (pb *ProgressBar) Read(p []byte) (n int, err error) {
 	n = len(p)
-	pb.Add(n)
+	pb.Add(int64(n))
 	return
 }
 
@@ -324,10 +306,7 @@ func (pb *ProgressBar) Update() {
 
 // Internal loop for writing progressbar
 func (pb *ProgressBar) writer() {
-	for {
-		if atomic.LoadInt32(&pb.isFinish) != 0 {
-			break
-		}
+	for atomic.LoadInt32(&pb.isFinish) == 0 {
 		pb.Update()
 		time.Sleep(pb.RefreshRate)
 	}

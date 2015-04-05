@@ -12,6 +12,6 @@ type Reader struct {
 
 func (r *Reader) Read(p []byte) (n int, err error) {
 	n, err = r.Reader.Read(p)
-	r.bar.Add(n)
+	r.bar.Add(int64(n))
 	return
 }
