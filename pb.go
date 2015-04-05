@@ -34,7 +34,7 @@ type ProgressBar struct {
 	Output                           io.Writer
 	Callback                         Callback
 	NotPrint                         bool
-	Units                            int
+	Units                            Units
 	Width                            int
 	ForceWidth                       bool
 	ManualUpdate                     bool
@@ -137,11 +137,8 @@ func (pb *ProgressBar) SetRefreshRate(rate time.Duration) *ProgressBar {
 // Set units
 // bar.SetUnits(U_NO) - by default
 // bar.SetUnits(U_BYTES) - for Mb, Kb, etc
-func (pb *ProgressBar) SetUnits(units int) *ProgressBar {
-	switch units {
-	case U_NO, U_BYTES:
-		pb.Units = units
-	}
+func (pb *ProgressBar) SetUnits(units Units) *ProgressBar {
+	pb.Units = units
 	return pb
 }
 
@@ -207,7 +204,8 @@ func (pb *ProgressBar) write(current int64) {
 	// counters
 	if pb.ShowCounters {
 		if pb.Total > 0 {
-			countersBox = fmt.Sprintf("%s / %s ", Format(current, pb.Units), Format(pb.Total, pb.Units))
+			countersBox = fmt.Sprintf("%s / %s ", Format(current, pb.Units),
+				Format(pb.Total, pb.Units))
 		} else {
 			countersBox = Format(current, pb.Units) + " "
 		}
