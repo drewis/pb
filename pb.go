@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"os"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -59,9 +60,12 @@ func New(total int64) *ProgressBar {
 		RefreshRate:   DEFAULT_REFRESH_RATE,
 		ShowPercent:   true,
 		ShowCounters:  true,
-		ShowBar:       true,
+		ShowSpeed:     true,
 		ShowTimeLeft:  true,
+		ShowBar:       true,
 		ShowFinalTime: true,
+		Output:        os.Stderr,
+		Units:         U_BYTES,
 		ManualUpdate:  false,
 		currentValue:  -1,
 	}
