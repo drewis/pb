@@ -16,6 +16,31 @@ const (
 	FORMAT               = "[=>-]"
 )
 
+// Create new progress bar object
+func New(total int64) *ProgressBar {
+	pb := &ProgressBar{
+		Total:         total,
+		RefreshRate:   DEFAULT_REFRESH_RATE,
+		ShowPercent:   true,
+		ShowCounters:  true,
+		ShowSpeed:     true,
+		ShowBar:       true,
+		ShowTimeLeft:  true,
+		ShowFinalTime: true,
+		Output:        os.Stderr,
+		Units:         U_BYTES,
+		ManualUpdate:  false,
+		isFinish:      make(chan bool, 1),
+		currentValue:  -1,
+	}
+	return pb.Format(FORMAT)
+}
+
+// Create new object and start
+func StartNew(total int64) *ProgressBar {
+	return New(total).Start()
+}
+
 // Callback for custom output
 // For example:
 // bar.Callback = func(s string) {
@@ -51,31 +76,6 @@ type ProgressBar struct {
 	Empty    string
 	Current  string
 	CurrentN string
-}
-
-// Create new progress bar object
-func New(total int64) *ProgressBar {
-	pb := &ProgressBar{
-		Total:         total,
-		RefreshRate:   DEFAULT_REFRESH_RATE,
-		ShowPercent:   true,
-		ShowCounters:  true,
-		ShowSpeed:     true,
-		ShowTimeLeft:  true,
-		ShowBar:       true,
-		ShowFinalTime: true,
-		Output:        os.Stderr,
-		Units:         U_BYTES,
-		ManualUpdate:  false,
-		isFinish:      make(chan bool, 1),
-		currentValue:  -1,
-	}
-	return pb.Format(FORMAT)
-}
-
-// Create new object and start
-func StartNew(total int64) *ProgressBar {
-	return New(total).Start()
 }
 
 // Start print
