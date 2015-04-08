@@ -10,7 +10,7 @@ type Units int
 
 const (
 	// By default, without type handle
-	U_NO Units = 1 << iota
+	U_NO Units = iota
 	// Handle as b, Kb, Mb, etc
 	U_BYTES
 )
