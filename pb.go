@@ -30,7 +30,7 @@ func New(total int64) *ProgressBar {
 		Output:        os.Stderr,
 		Units:         U_BYTES,
 		ManualUpdate:  false,
-		isFinish:      make(chan bool, 1),
+		isFinish:      make(chan struct{}),
 		currentValue:  -1,
 	}
 	return pb.Format(FORMAT)
@@ -65,7 +65,7 @@ type ProgressBar struct {
 	ForceWidth                       bool
 	ManualUpdate                     bool
 
-	isFinish     chan bool
+	isFinish     chan struct{}
 	startTime    time.Time
 	currentValue int64
 
@@ -163,7 +163,7 @@ func (pb *ProgressBar) SetWidth(width int) *ProgressBar {
 
 // End print
 func (pb *ProgressBar) Finish() {
-	pb.isFinish <- true
+	close(pb.isFinish)
 	pb.write(atomic.LoadInt64(&pb.current))
 }
 
