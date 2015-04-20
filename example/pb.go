@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/cheggaaa/pb"
+	"github.com/drewis/pb"
 	"time"
 )
 
 func main() {
-	count := 5000
+	count := int64(5000)
 	bar := pb.New(count)
 
 	// show percents (by default already true)
@@ -22,7 +22,7 @@ func main() {
 
 	// and start
 	bar.Start()
-	for i := 0; i < count; i++ {
+	for i := int64(0); i < count; i++ {
 		bar.Increment()
 		time.Sleep(time.Millisecond)
 	}

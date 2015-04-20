@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/cheggaaa/pb"
+	"github.com/drewis/pb"
 	"io"
 	"net/http"
 	"os"
@@ -64,7 +64,7 @@ func main() {
 	defer dest.Close()
 
 	// create bar
-	bar := pb.New(int(sourceSize)).SetUnits(pb.U_BYTES).SetRefreshRate(time.Millisecond * 10)
+	bar := pb.New(sourceSize).SetUnits(pb.U_BYTES).SetRefreshRate(time.Millisecond * 10)
 	bar.ShowSpeed = true
 	bar.Start()
 
